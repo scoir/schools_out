@@ -170,3 +170,25 @@ func TestSchoolsOut_ListHolidays_NoHolidays(t *testing.T) {
 	l := so.ListHolidays()
 	assert.Len(t, l, 0)
 }
+
+func TestSchoolsOut_HolidayDateForYears(t *testing.T) {
+	so := SchoolsOut{}
+	so.AddHoliday("New Years", FixedDay(1, time.January), true)
+	so.AddHoliday("Memorial Day", LastWeekdayOf(time.Monday, time.May), false)
+
+	r, err := so.HolidayDateForYears("New Years", []int{1999, 2000})
+	assert.NoError(t, err)
+	assert.Len(t, r, 2, "there should be two new years holidays between 1999 & 2000")
+	assert.Equal(t, time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), r[0])
+	assert.Equal(t, time.Date(1999, 12, 31, 0, 0, 0, 0, time.UTC), r[1])
+}
+
+func TestSchoolsOut_HolidayDateForYears_NotFound(t *testing.T) {
+	so := SchoolsOut{}
+	so.AddHoliday("New Years", FixedDay(1, time.January), true)
+
+	_, err := so.HolidayDateForYears("Festivus", []int{1999, 2000})
+
+	assert.Error(t, err)
+}
+

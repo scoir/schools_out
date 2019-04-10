@@ -1,6 +1,7 @@
 package schools_out
 
 import (
+	"errors"
 	"sync"
 	"time"
 )
@@ -62,9 +63,7 @@ func (so *SchoolsOut) AllHolidaysForYear(year int) []Holiday {
 	defer so.Unlock()
 
 	c := []Holiday{}
-
 	for _, def := range so.holidays {
-
 		f := func(processYear int) {
 			date := def.calculation(processYear)
 			// Only push to slice if resulting year matches
@@ -83,6 +82,24 @@ func (so *SchoolsOut) AllHolidaysForYear(year int) []Holiday {
 		}
 	}
 	return c
+}
+
+// HolidayDateForYears returns the date(s) applicable for the holiday over the specified years
+func (so *SchoolsOut) HolidayDateForYears(name string, years []int) ([]time.Time, error) {
+	so.Lock()
+	defer so.Unlock()
+
+	for _, def := range so.holidays {
+		if def.Name == name {
+			d := []time.Time{}
+			for _, year := range years {
+				d = append(d, def.calculation(year))
+			}
+			return d, nil
+		}
+	}
+
+	return nil, errors.New("holiday not found")
 }
 
 // IsHoliday returns true if the passed time.Time occurs on a holiday for the specified year.

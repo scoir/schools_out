@@ -7,7 +7,7 @@ import (
 )
 
 func TestAddUSHolidays(t *testing.T) {
-	so := &SchoolsOut{}
+	so := &Calendar{}
 	AddUSHolidays(so)
 
 	assert.Len(t, so.holidays, 10)

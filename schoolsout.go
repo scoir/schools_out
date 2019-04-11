@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-// SchoolsOut is used to determine and calculate applicable holidays.
-type SchoolsOut struct {
+// Calendar is used to determine and calculate applicable holidays.
+type Calendar struct {
 	sync.RWMutex
 
 	DisableShiftSaturday bool
@@ -29,15 +29,15 @@ type Holiday struct {
 }
 
 // ClearHolidays removes all previously loaded holidays.
-func (so *SchoolsOut) ClearHolidays() {
+func (so *Calendar) ClearHolidays() {
 	so.Lock()
 	defer so.Unlock()
 
 	so.holidays = nil
 }
 
-// AddHoliday adds a new holiday definition to the SchoolsOut instance.
-func (so *SchoolsOut) AddHoliday(name string, def DateCalculation, mayShiftYear bool) {
+// AddHoliday adds a new holiday definition to the Calendar instance.
+func (so *Calendar) AddHoliday(name string, def DateCalculation, mayShiftYear bool) {
 	so.Lock()
 	defer so.Unlock()
 
@@ -49,7 +49,7 @@ func (so *SchoolsOut) AddHoliday(name string, def DateCalculation, mayShiftYear 
 }
 
 // Unique list of the currently loaded holiday names (order is not guaranteed).
-func (so *SchoolsOut) ListHolidays() []string {
+func (so *Calendar) ListHolidays() []string {
 	names := make([]string, len(so.holidays))
 	for i, h := range so.holidays {
 		names[i] = h.Name
@@ -58,7 +58,7 @@ func (so *SchoolsOut) ListHolidays() []string {
 }
 
 // AllHolidaysForYear generates a list of all holidays for the specified year (order is not guaranteed).
-func (so *SchoolsOut) AllHolidaysForYear(year int) []Holiday {
+func (so *Calendar) AllHolidaysForYear(year int) []Holiday {
 	so.Lock()
 	defer so.Unlock()
 
@@ -85,7 +85,7 @@ func (so *SchoolsOut) AllHolidaysForYear(year int) []Holiday {
 }
 
 // HolidayDateForYears returns the date(s) applicable for the holiday over the specified years
-func (so *SchoolsOut) HolidayDateForYears(name string, years []int) ([]time.Time, error) {
+func (so *Calendar) HolidayDateForYears(name string, years []int) ([]time.Time, error) {
 	so.Lock()
 	defer so.Unlock()
 
@@ -103,7 +103,7 @@ func (so *SchoolsOut) HolidayDateForYears(name string, years []int) ([]time.Time
 }
 
 // IsHoliday returns true if the passed time.Time occurs on a holiday for the specified year.
-func (so *SchoolsOut) IsHoliday(date time.Time) bool {
+func (so *Calendar) IsHoliday(date time.Time) bool {
 	for _, h := range so.AllHolidaysForYear(date.Year()) {
 		if h.Date.Month() == date.Month() && h.Date.Day() == date.Day() {
 			return true
@@ -114,7 +114,7 @@ func (so *SchoolsOut) IsHoliday(date time.Time) bool {
 }
 
 // shiftForWeekend will adjust a holiday to Friday or Sunday based to meet federal guidelines.
-func (so *SchoolsOut) shiftForWeekend(calc DateCalculation) DateCalculation {
+func (so *Calendar) shiftForWeekend(calc DateCalculation) DateCalculation {
 	return func(year int) time.Time {
 		date := calc(year)
 

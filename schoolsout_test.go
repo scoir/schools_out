@@ -51,7 +51,7 @@ func TestLastWeekdayOf_LeapYear(t *testing.T) {
 }
 
 func TestSchoolsOut_shiftForWeekend_Saturday(t *testing.T) {
-	so := SchoolsOut{}
+	so := Calendar{}
 	sf := so.shiftForWeekend(FixedDay(1, time.January))
 
 	d := sf(2000)
@@ -59,7 +59,7 @@ func TestSchoolsOut_shiftForWeekend_Saturday(t *testing.T) {
 }
 
 func TestSchoolsOut_shiftForWeekend_Sunday(t *testing.T) {
-	so := SchoolsOut{}
+	so := Calendar{}
 	sf := so.shiftForWeekend(FixedDay(31, time.December))
 
 	d := sf(2000)
@@ -67,7 +67,7 @@ func TestSchoolsOut_shiftForWeekend_Sunday(t *testing.T) {
 }
 
 func TestSchoolsOut_shiftForWeekend_Disabled(t *testing.T) {
-	so := SchoolsOut{
+	so := Calendar{
 		DisableShiftSunday: true,
 	}
 	sf := so.shiftForWeekend(FixedDay(31, time.December))
@@ -77,7 +77,7 @@ func TestSchoolsOut_shiftForWeekend_Disabled(t *testing.T) {
 }
 
 func TestSchoolsOut_AddHoliday(t *testing.T) {
-	so := SchoolsOut{}
+	so := Calendar{}
 	so.AddHoliday("New Years", FixedDay(1, time.January), true)
 
 	assert.Len(t, so.holidays, 1)
@@ -87,7 +87,7 @@ func TestSchoolsOut_AddHoliday(t *testing.T) {
 }
 
 func TestSchoolsOut_ClearHolidays(t *testing.T) {
-	so := SchoolsOut{}
+	so := Calendar{}
 	assert.Len(t, so.holidays, 0)
 
 	so.AddHoliday("New Years", FixedDay(1, time.January), true)
@@ -98,7 +98,7 @@ func TestSchoolsOut_ClearHolidays(t *testing.T) {
 }
 
 func TestSchoolsOut_AllHolidaysForYear(t *testing.T) {
-	so := SchoolsOut{}
+	so := Calendar{}
 	so.AddHoliday("New Years", FixedDay(1, time.January), true)
 	so.AddHoliday("Memorial Day", LastWeekdayOf(time.Monday, time.May), false)
 	so.AddHoliday("Thanksgiving", NthWeekdayOf(4, time.Thursday, time.November), false)
@@ -112,7 +112,7 @@ func TestSchoolsOut_AllHolidaysForYear(t *testing.T) {
 }
 
 func TestSchoolsOut_AllHolidaysForYear_Double(t *testing.T) {
-	so := SchoolsOut{}
+	so := Calendar{}
 	so.AddHoliday("New Years", FixedDay(1, time.January), true)
 
 	r := so.AllHolidaysForYear(1999)
@@ -123,7 +123,7 @@ func TestSchoolsOut_AllHolidaysForYear_Double(t *testing.T) {
 }
 
 func TestSchoolsOut_AllHolidaysForYear_ShiftYearBack(t *testing.T) {
-	so := SchoolsOut{}
+	so := Calendar{}
 	so.AddHoliday("New Years", FixedDay(1, time.January), true)
 
 	r := so.AllHolidaysForYear(2000)
@@ -131,7 +131,7 @@ func TestSchoolsOut_AllHolidaysForYear_ShiftYearBack(t *testing.T) {
 }
 
 func TestSchoolsOut_AllHolidaysForYear_ShiftYearForward(t *testing.T) {
-	so := SchoolsOut{}
+	so := Calendar{}
 	so.AddHoliday("New Years Eve", FixedDay(31, time.December), true)
 
 	r := so.AllHolidaysForYear(2000)
@@ -139,7 +139,7 @@ func TestSchoolsOut_AllHolidaysForYear_ShiftYearForward(t *testing.T) {
 }
 
 func TestSchoolsOut_IsHoliday(t *testing.T) {
-	so := SchoolsOut{}
+	so := Calendar{}
 	so.AddHoliday("New Years", FixedDay(1, time.January), true)
 	so.AddHoliday("Memorial Day", LastWeekdayOf(time.Monday, time.May), false)
 	so.AddHoliday("Thanksgiving", NthWeekdayOf(4, time.Thursday, time.November), false)
@@ -153,7 +153,7 @@ func TestSchoolsOut_IsHoliday(t *testing.T) {
 }
 
 func TestSchoolsOut_ListHolidays(t *testing.T) {
-	so := SchoolsOut{}
+	so := Calendar{}
 	so.AddHoliday("New Years", FixedDay(1, time.January), true)
 	so.AddHoliday("Memorial Day", LastWeekdayOf(time.Monday, time.May), false)
 
@@ -165,13 +165,13 @@ func TestSchoolsOut_ListHolidays(t *testing.T) {
 }
 
 func TestSchoolsOut_ListHolidays_NoHolidays(t *testing.T) {
-	so := SchoolsOut{}
+	so := Calendar{}
 	l := so.ListHolidays()
 	assert.Len(t, l, 0)
 }
 
 func TestSchoolsOut_HolidayDateForYears(t *testing.T) {
-	so := SchoolsOut{}
+	so := Calendar{}
 	so.AddHoliday("New Years", FixedDay(1, time.January), true)
 	so.AddHoliday("Memorial Day", LastWeekdayOf(time.Monday, time.May), false)
 
@@ -183,7 +183,7 @@ func TestSchoolsOut_HolidayDateForYears(t *testing.T) {
 }
 
 func TestSchoolsOut_HolidayDateForYears_NotFound(t *testing.T) {
-	so := SchoolsOut{}
+	so := Calendar{}
 	so.AddHoliday("New Years", FixedDay(1, time.January), true)
 
 	_, err := so.HolidayDateForYears("Festivus", []int{1999, 2000})

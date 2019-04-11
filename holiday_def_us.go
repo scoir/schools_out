@@ -3,7 +3,7 @@ package schoolsout
 import "time"
 
 // US Holidays
-func AddUSHolidays(so *SchoolsOut) {
+func AddUSHolidays(so *Calendar) {
 	so.AddHoliday("New Years Day", FixedDay(1, time.January), true)
 	so.AddHoliday("Martin Luther King Day", NthWeekdayOf(3, time.Monday, time.January), false)
 	so.AddHoliday("President's Day", NthWeekdayOf(3, time.Monday, time.February), false)

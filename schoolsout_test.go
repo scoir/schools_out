@@ -1,193 +1,233 @@
 package schoolsout
 
 import (
-	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-func TestFixedDay(t *testing.T) {
-	c := FixedDay(1, 1)
-	assert.NotNil(t, c)
+var _ = Describe("SchoolsOut", func() {
 
-	d := c(2000)
-	assert.Equal(t, time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), d)
-}
+	Describe("Holiday Calculators", func() {
 
-func TestNthWeekdayOf(t *testing.T) {
-	c := NthWeekdayOf(1, time.Monday, time.January)
-	assert.NotNil(t, c)
+		Context("FixedDay", func() {
+			It("Should return a function for calculating a specific day", func() {
+				c := FixedDay(1, 1)
+				Expect(c).ShouldNot(BeNil())
 
-	d := c(2000)
-	assert.Equal(t, time.Date(2000, 1, 3, 0, 0, 0, 0, time.UTC), d)
+				d := c(2000)
+				Expect(d).Should(Equal(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)))
+			})
+		})
 
-	d = c(2001)
-	assert.Equal(t, time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC), d)
-}
+		Context("NthWeekdayOf", func() {
+			It("Should return a function for calculating a specific day", func() {
+				c := NthWeekdayOf(1, time.Monday, time.January)
+				Expect(c).ShouldNot(BeNil())
 
-func TestNthWeekdayOf_NegativeOffset(t *testing.T) {
-	c := NthWeekdayOf(5, time.Wednesday, time.January)
-	assert.NotNil(t, c)
+				d := c(2000)
+				Expect(d).Should(Equal(time.Date(2000, 1, 3, 0, 0, 0, 0, time.UTC)))
 
-	d := c(2001)
-	assert.Equal(t, time.Date(2001, 1, 31, 0, 0, 0, 0, time.UTC), d)
-}
+				d = c(2001)
+				Expect(d).Should(Equal(time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)))
+			})
 
-func TestLastWeekdayOf(t *testing.T) {
-	c := LastWeekdayOf(time.Monday, time.January)
-	assert.NotNil(t, c)
+			It("Should support calculating a specific day with a negative offset", func() {
+				c := NthWeekdayOf(5, time.Wednesday, time.January)
+				Expect(c).ShouldNot(BeNil())
 
-	d := c(2000)
-	assert.Equal(t, time.Date(2000, 1, 31, 0, 0, 0, 0, time.UTC), d)
-}
+				d := c(2001)
+				Expect(d).Should(Equal(time.Date(2001, 1, 31, 0, 0, 0, 0, time.UTC)))
+			})
+		})
 
-func TestLastWeekdayOf_LeapYear(t *testing.T) {
-	c := LastWeekdayOf(time.Tuesday, time.February)
-	assert.NotNil(t, c)
+		Context("LastWeekdayOf", func() {
+			It("Should return a function for calculating a specific day", func() {
+				c := LastWeekdayOf(time.Monday, time.January)
+				Expect(c).ShouldNot(BeNil())
 
-	d := c(2000)
-	assert.Equal(t, time.Date(2000, 2, 29, 0, 0, 0, 0, time.UTC), d)
-}
+				d := c(2000)
+				Expect(d).Should(Equal(time.Date(2000, 1, 31, 0, 0, 0, 0, time.UTC)))
+			})
 
-func TestSchoolsOut_shiftForWeekend_Saturday(t *testing.T) {
-	so := Calendar{}
-	sf := so.shiftForWeekend(FixedDay(1, time.January))
+			It("Should return a function for calculating a specific day, even with Leap Years", func() {
+				c := LastWeekdayOf(time.Tuesday, time.February)
+				Expect(c).ShouldNot(BeNil())
 
-	d := sf(2000)
-	assert.Equal(t, time.Date(1999, 12, 31, 0, 0, 0, 0, time.UTC), d)
-}
+				d := c(2000)
+				Expect(d).Should(Equal(time.Date(2000, 2, 29, 0, 0, 0, 0, time.UTC)))
+			})
+		})
 
-func TestSchoolsOut_shiftForWeekend_Sunday(t *testing.T) {
-	so := Calendar{}
-	sf := so.shiftForWeekend(FixedDay(31, time.December))
+	})
 
-	d := sf(2000)
-	assert.Equal(t, time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC), d)
-}
+	Describe("Calendar", func() {
+		var (
+			target *Calendar
+		)
 
-func TestSchoolsOut_shiftForWeekend_Disabled(t *testing.T) {
-	so := Calendar{
-		DisableShiftSunday: true,
-	}
-	sf := so.shiftForWeekend(FixedDay(31, time.December))
+		BeforeEach(func() {
+			target = &Calendar{}
+		})
 
-	d := sf(2000)
-	assert.Equal(t, time.Date(2000, 12, 31, 0, 0, 0, 0, time.UTC), d)
-}
+		Context("shiftForWeekend", func() {
+			It("should shift saturday to friday", func() {
+				sf := target.shiftForWeekend(FixedDay(1, time.January))
+				d := sf(2000)
 
-func TestSchoolsOut_AddHoliday(t *testing.T) {
-	so := Calendar{}
-	so.AddHoliday("New Years", FixedDay(1, time.January), true)
+				Expect(d).Should(Equal(time.Date(1999, 12, 31, 0, 0, 0, 0, time.UTC)))
+			})
 
-	assert.Len(t, so.holidays, 1)
-	assert.Equal(t, "New Years", so.holidays[0].Name)
-	assert.NotNil(t, so.holidays[0].calculation)
-	assert.True(t, so.holidays[0].checkForYearShift)
-}
+			It("should shift sunday to monday", func() {
+				sf := target.shiftForWeekend(FixedDay(31, time.December))
+				d := sf(2000)
 
-func TestSchoolsOut_ClearHolidays(t *testing.T) {
-	so := Calendar{}
-	assert.Len(t, so.holidays, 0)
+				Expect(d).Should(Equal(time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)))
+			})
 
-	so.AddHoliday("New Years", FixedDay(1, time.January), true)
-	assert.Len(t, so.holidays, 1)
+			It("shouldn't shift if shifting is disabled", func() {
+				target.DisableShiftSunday = true
 
-	so.ClearHolidays()
-	assert.Len(t, so.holidays, 0)
-}
+				sf := target.shiftForWeekend(FixedDay(31, time.December))
+				d := sf(2000)
 
-func TestSchoolsOut_AllHolidaysForYear(t *testing.T) {
-	so := Calendar{}
-	so.AddHoliday("New Years", FixedDay(1, time.January), true)
-	so.AddHoliday("Memorial Day", LastWeekdayOf(time.Monday, time.May), false)
-	so.AddHoliday("Thanksgiving", NthWeekdayOf(4, time.Thursday, time.November), false)
+				Expect(d).Should(Equal(time.Date(2000, 12, 31, 0, 0, 0, 0, time.UTC)))
+			})
+		})
 
-	r :=  so.AllHolidaysForYear(2001)
+		Context("AddHoliday", func() {
+			It("can add a holiday", func() {
+				target.AddHoliday("New Years", FixedDay(1, time.January), true)
 
-	assert.Len(t, r, 3)
-	assert.Equal(t, time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC), r[0].Date)
-	assert.Equal(t, time.Date(2001, 5, 28, 0, 0, 0, 0, time.UTC), r[1].Date)
-	assert.Equal(t, time.Date(2001, 11, 22, 0, 0, 0, 0, time.UTC), r[2].Date)
-}
+				Expect(target.holidays).To(HaveLen(1))
+				Expect(target.holidays[0].Name).To(Equal("New Years"))
+				Expect(target.holidays[0].calculation).ToNot(BeNil())
+				Expect(target.holidays[0].checkForYearShift).To(BeTrue())
+			})
+		})
 
-func TestSchoolsOut_AllHolidaysForYear_Double(t *testing.T) {
-	so := Calendar{}
-	so.AddHoliday("New Years", FixedDay(1, time.January), true)
+		Context("ClearHolidays", func() {
+			It("clears the list of holidays", func() {
+				target.AddHoliday("New Years", FixedDay(1, time.January), true)
+				Expect(target.holidays).To(HaveLen(1))
 
-	r := so.AllHolidaysForYear(1999)
+				target.ClearHolidays()
+				Expect(target.holidays).To(HaveLen(0))
+			})
+		})
 
-	assert.Len(t, r, 2, "there should be two new years holidays in 1999")
-	assert.Equal(t, time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), r[0].Date)
-	assert.Equal(t, time.Date(1999, 12, 31, 0, 0, 0, 0, time.UTC), r[1].Date)
-}
+		Context("AllHolidaysForYear", func() {
+			It("calculates for specified holidays", func() {
+				target.AddHoliday("New Years", FixedDay(1, time.January), true)
+				target.AddHoliday("Memorial Day", LastWeekdayOf(time.Monday, time.May), false)
+				target.AddHoliday("Thanksgiving", NthWeekdayOf(4, time.Thursday, time.November), false)
 
-func TestSchoolsOut_AllHolidaysForYear_ShiftYearBack(t *testing.T) {
-	so := Calendar{}
-	so.AddHoliday("New Years", FixedDay(1, time.January), true)
+				r := target.AllHolidaysForYear(2001)
 
-	r := so.AllHolidaysForYear(2000)
-	assert.Len(t, r, 0, "new years of 2000, shifted to 1999 so we shouldn't have results")
-}
+				Expect(r).To(HaveLen(3))
+				Expect(r).To(ContainElement(Equal(Holiday{Name: "New Years", Date: time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)})))
+				Expect(r).To(ContainElement(Equal(Holiday{Name: "Memorial Day", Date: time.Date(2001, 5, 28, 0, 0, 0, 0, time.UTC)})))
+				Expect(r).To(ContainElement(Equal(Holiday{Name: "Thanksgiving", Date: time.Date(2001, 11, 22, 0, 0, 0, 0, time.UTC)})))
+			})
 
-func TestSchoolsOut_AllHolidaysForYear_ShiftYearForward(t *testing.T) {
-	so := Calendar{}
-	so.AddHoliday("New Years Eve", FixedDay(31, time.December), true)
+			It("calculates for holidays that appear twice in a year", func() {
+				target.AddHoliday("New Years", FixedDay(1, time.January), true)
 
-	r := so.AllHolidaysForYear(2000)
-	assert.Len(t, r, 0, "new years eve of 2000, shifted to 2001 so we shouldn't have results")
-}
+				r := target.AllHolidaysForYear(1999)
 
-func TestSchoolsOut_IsHoliday(t *testing.T) {
-	so := Calendar{}
-	so.AddHoliday("New Years", FixedDay(1, time.January), true)
-	so.AddHoliday("Memorial Day", LastWeekdayOf(time.Monday, time.May), false)
-	so.AddHoliday("Thanksgiving", NthWeekdayOf(4, time.Thursday, time.November), false)
+				Expect(r).To(HaveLen(2))
+				Expect(r).To(ContainElement(Equal(Holiday{Name: "New Years", Date: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC)})))
+				Expect(r).To(ContainElement(Equal(Holiday{Name: "New Years", Date: time.Date(1999, 12, 31, 0, 0, 0, 0, time.UTC)})))
+			})
 
-	assert.True(t, so.IsHoliday(time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)))
-	assert.True(t, so.IsHoliday(time.Date(2019, 5, 27, 0, 0, 0, 0, time.UTC)))
-	assert.True(t, so.IsHoliday(time.Date(2019, 11, 28, 0, 0, 0, 0, time.UTC)))
+			It("excludes holidays that shift to back a year (new years of 2000, shifted to 1999 so we shouldn't have results)", func() {
+				target.AddHoliday("New Years", FixedDay(1, time.January), true)
 
-	assert.False(t, so.IsHoliday(time.Date(2018, 12, 31, 0, 0, 0, 0, time.UTC)))
-	assert.False(t, so.IsHoliday(time.Date(2019, 1, 2, 0, 0, 0, 0, time.UTC)))
-}
+				r := target.AllHolidaysForYear(2000)
 
-func TestSchoolsOut_ListHolidays(t *testing.T) {
-	so := Calendar{}
-	so.AddHoliday("New Years", FixedDay(1, time.January), true)
-	so.AddHoliday("Memorial Day", LastWeekdayOf(time.Monday, time.May), false)
+				Expect(r).To(HaveLen(0))
+			})
 
-	l := so.ListHolidays()
-	assert.Len(t, l, 2)
+			It("excludes holidays that shift to forward a year (new years eve of 2000, shifted to 2001 so we shouldn't have results)", func() {
+				target.AddHoliday("New Years Eve", FixedDay(31, time.December), true)
 
-	assert.Equal(t, "New Years", l[0])
-	assert.Equal(t, "Memorial Day", l[1])
-}
+				r := target.AllHolidaysForYear(2000)
 
-func TestSchoolsOut_ListHolidays_NoHolidays(t *testing.T) {
-	so := Calendar{}
-	l := so.ListHolidays()
-	assert.Len(t, l, 0)
-}
+				Expect(r).To(HaveLen(0))
+			})
+		})
 
-func TestSchoolsOut_HolidayDateForYears(t *testing.T) {
-	so := Calendar{}
-	so.AddHoliday("New Years", FixedDay(1, time.January), true)
-	so.AddHoliday("Memorial Day", LastWeekdayOf(time.Monday, time.May), false)
+		Context("IsHoliday", func() {
 
-	r, err := so.HolidayDateForYears("New Years", []int{1999, 2000})
-	assert.NoError(t, err)
-	assert.Len(t, r, 2, "there should be two new years holidays between 1999 & 2000")
-	assert.Equal(t, time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), r[0])
-	assert.Equal(t, time.Date(1999, 12, 31, 0, 0, 0, 0, time.UTC), r[1])
-}
+			BeforeEach(func() {
+				target.AddHoliday("New Years", FixedDay(1, time.January), true)
+				target.AddHoliday("Memorial Day", LastWeekdayOf(time.Monday, time.May), false)
+				target.AddHoliday("Thanksgiving", NthWeekdayOf(4, time.Thursday, time.November), false)
+			})
 
-func TestSchoolsOut_HolidayDateForYears_NotFound(t *testing.T) {
-	so := Calendar{}
-	so.AddHoliday("New Years", FixedDay(1, time.January), true)
+			It("should match for new years", func() {
+				Expect(target.IsHoliday(time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC))).To(BeTrue())
+			})
 
-	_, err := so.HolidayDateForYears("Festivus", []int{1999, 2000})
+			It("should match for memorial day", func() {
+				Expect(target.IsHoliday(time.Date(2019, 5, 27, 0, 0, 0, 0, time.UTC))).To(BeTrue())
+			})
 
-	assert.Error(t, err)
-}
+			It("should match for thanksgiving", func() {
+				Expect(target.IsHoliday(time.Date(2019, 11, 28, 0, 0, 0, 0, time.UTC))).To(BeTrue())
+			})
 
+			It("should not match for random day", func() {
+				Expect(target.IsHoliday(time.Date(2018, 12, 31, 0, 0, 0, 0, time.UTC))).To(BeFalse())
+			})
+
+			It("should not match for another random day", func() {
+				Expect(target.IsHoliday(time.Date(2019, 1, 2, 0, 0, 0, 0, time.UTC))).To(BeFalse())
+			})
+		})
+
+		Context("ListHolidays", func() {
+			It("should return a list of registered holidays", func() {
+				target.AddHoliday("New Years", FixedDay(1, time.January), true)
+				target.AddHoliday("Memorial Day", LastWeekdayOf(time.Monday, time.May), false)
+
+				l := target.ListHolidays()
+
+				Expect(l).To(HaveLen(2))
+				Expect(l).To(ConsistOf([]string{"New Years", "Memorial Day"}))
+			})
+
+			It("should return empty if there are no registered holidays", func() {
+				Expect(target.ListHolidays()).To(HaveLen(0))
+			})
+		})
+
+		Context("HolidayDateForYears", func() {
+
+			BeforeEach(func() {
+				target.AddHoliday("New Years", FixedDay(1, time.January), true)
+				target.AddHoliday("Memorial Day", LastWeekdayOf(time.Monday, time.May), false)
+			})
+
+			It("should return a list of dates applicable for the specified holiday", func() {
+				r, err := target.HolidayDateForYears("New Years", []int{1999, 2000})
+
+				Expect(err).ToNot(HaveOccurred())
+				Expect(r).To(HaveLen(2))
+
+				Expect(r).To(ConsistOf([]time.Time{
+					time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC),
+					time.Date(1999, 12, 31, 0, 0, 0, 0, time.UTC),
+				}))
+			})
+
+			It("should return error when holiday is not found", func() {
+				_, err := target.HolidayDateForYears("Festivus", []int{1999, 2000})
+
+				Expect(err).To(HaveOccurred())
+			})
+		})
+
+	})
+})

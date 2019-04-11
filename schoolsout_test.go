@@ -1,4 +1,4 @@
-package schools_out
+package schoolsout
 
 import (
 	"testing"
@@ -33,7 +33,6 @@ func TestNthWeekdayOf_NegativeOffset(t *testing.T) {
 	d := c(2001)
 	assert.Equal(t, time.Date(2001, 1, 31, 0, 0, 0, 0, time.UTC), d)
 }
-
 
 func TestLastWeekdayOf(t *testing.T) {
 	c := LastWeekdayOf(time.Monday, time.January)

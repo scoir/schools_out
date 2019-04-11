@@ -1,4 +1,4 @@
-package schools_out
+package schoolsout
 
 import (
 	"errors"

@@ -1,4 +1,4 @@
-module schoolsout
+module github.com/scoir/schoolsout
 
 go 1.12
 
